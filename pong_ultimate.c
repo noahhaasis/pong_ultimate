@@ -5,6 +5,7 @@
 #define SCREEN_HEIGHT 800
 #define PADDLE_HEIGHT 100
 #define PADDLE_WIDTH  20
+#define BORDER_DISTANCE 10
 
 typedef struct {
     /* x and y denote the upper left corner */
@@ -22,6 +23,8 @@ void initialize_paddles(
 
 void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer);
 
+int constrain(int n, int low, int heigh);
+
 int main(void) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window *window = SDL_CreateWindow(
@@ -36,7 +39,7 @@ int main(void) {
     paddle_t left_paddle, right_paddle, top_paddle, bottom_paddle;
     initialize_paddles(&right_paddle, &left_paddle, &top_paddle, &bottom_paddle);
 
-
+    int mouse_x, mouse_y;
     bool running = true;
     SDL_Event e;
     while (running) {
@@ -46,9 +49,25 @@ int main(void) {
             }
         }
 
+        // Update paddles
+        SDL_GetMouseState(&mouse_x, &mouse_y);
+        int max_x = SCREEN_WIDTH - (BORDER_DISTANCE + PADDLE_WIDTH + PADDLE_HEIGHT);
+        int min_x = BORDER_DISTANCE + PADDLE_WIDTH;
+        int new_x = constrain(mouse_x - PADDLE_HEIGHT/2, min_x, max_x);
+
+        int min_y = BORDER_DISTANCE + PADDLE_WIDTH;
+        int max_y = SCREEN_HEIGHT - (BORDER_DISTANCE + PADDLE_WIDTH + PADDLE_HEIGHT);
+        int new_y = constrain(mouse_y - PADDLE_HEIGHT/2, min_y, max_y);
+
+        left_paddle.y = new_y;
+        right_paddle.y = new_y;
+        top_paddle.x = new_x;
+        bottom_paddle.x = new_x;
+
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-
+        
         draw_paddle(&left_paddle, renderer);
         draw_paddle(&right_paddle, renderer);
         draw_paddle(&top_paddle, renderer);
@@ -60,6 +79,15 @@ int main(void) {
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
+}
+
+int constrain(int n, int low, int heigh) {
+     if (n < low) {
+         return low;
+     } else if (n > heigh) {
+         return heigh;
+     }
+     return n;
 }
 
 void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer) {
@@ -75,23 +103,23 @@ void initialize_paddles(
     int horizontal_middle = (int)((SCREEN_WIDTH - PADDLE_HEIGHT) / 2);
     int vertical_middle = (int)((SCREEN_HEIGHT - PADDLE_HEIGHT) / 2);
 
-    left_paddle->x        = 10;
+    left_paddle->x        = BORDER_DISTANCE;
     left_paddle->y        = vertical_middle;
     left_paddle->width    = PADDLE_WIDTH;
     left_paddle->height   = PADDLE_HEIGHT;
 
-    right_paddle->x       = SCREEN_WIDTH - 10 - PADDLE_WIDTH;
+    right_paddle->x       = SCREEN_WIDTH - BORDER_DISTANCE - PADDLE_WIDTH;
     right_paddle->y       = vertical_middle;
     right_paddle->width   = PADDLE_WIDTH;
     right_paddle->height  = PADDLE_HEIGHT;
 
     top_paddle->x         = horizontal_middle;
-    top_paddle->y         = 10;
+    top_paddle->y         = BORDER_DISTANCE;
     top_paddle->width     = PADDLE_HEIGHT;
     top_paddle->height    = PADDLE_WIDTH;
 
     bottom_paddle->x      = horizontal_middle;
-    bottom_paddle->y      = SCREEN_HEIGHT - 10 - PADDLE_WIDTH;
+    bottom_paddle->y      = SCREEN_HEIGHT - BORDER_DISTANCE - PADDLE_WIDTH;
     bottom_paddle->width  = PADDLE_HEIGHT;
     bottom_paddle->height = PADDLE_WIDTH;
 }
