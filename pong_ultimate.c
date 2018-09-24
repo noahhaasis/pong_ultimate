@@ -27,13 +27,14 @@ int constrain(int n, int low, int heigh);
 
 int main(void) {
     SDL_Init(SDL_INIT_VIDEO);
+    Uint32 flags = SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_MOUSE_CAPTURE;
     SDL_Window *window = SDL_CreateWindow(
             "Pong Ultimate", 
             SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED,
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
-            0);
+            flags);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 
     paddle_t left_paddle, right_paddle, top_paddle, bottom_paddle;
@@ -44,7 +45,9 @@ int main(void) {
     SDL_Event e;
     while (running) {
         while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
+            bool pressed_esc = e.type == SDL_KEYDOWN
+                     && e.key.keysym.scancode == SDL_SCANCODE_ESCAPE;
+            if (e.type == SDL_QUIT || pressed_esc) {
                 running = false;
             }
         }
