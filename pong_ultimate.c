@@ -72,8 +72,8 @@ void initialize_paddles(
             paddle_t *right_paddle,
             paddle_t *top_paddle,
             paddle_t *bottom_paddle) {
-    int horizontal_middle = (int)(SCREEN_WIDTH / 2) - PADDLE_WIDTH;
-    int vertical_middle = (int)(SCREEN_HEIGHT/2) - PADDLE_WIDTH;
+    int horizontal_middle = (int)((SCREEN_WIDTH - PADDLE_HEIGHT) / 2);
+    int vertical_middle = (int)((SCREEN_HEIGHT - PADDLE_HEIGHT) / 2);
 
     left_paddle->x        = 10;
     left_paddle->y        = vertical_middle;
