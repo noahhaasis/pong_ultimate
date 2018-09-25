@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <math.h>
+#include <time.h>
 #include "SDL2/SDL.h"
 
 #define SCREEN_WIDTH  800
@@ -7,6 +9,7 @@
 #define PADDLE_WIDTH  20
 #define BORDER_DISTANCE 10
 #define BALL_RADIUS 10
+#define BALL_VELOCITY 1 // In pixel per second
 
 typedef struct {
     /* x and y denote the upper left corner */
@@ -36,6 +39,9 @@ void draw_ball(ball_t *ball, SDL_Renderer *renderer);
 
 int constrain(int n, int low, int heigh);
 
+/* Compute the x_velocity so the ball has a total velocity of BALL_VELOCITY */
+int compute_x_velocity(int y_velocity);
+
 int main(void) {
     SDL_Init(SDL_INIT_VIDEO);
     Uint32 flags = SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_MOUSE_CAPTURE;
@@ -51,7 +57,11 @@ int main(void) {
     paddle_t left_paddle, right_paddle, top_paddle, bottom_paddle;
     initialize_paddles(&right_paddle, &left_paddle, &top_paddle, &bottom_paddle);
 
-    ball_t ball = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, BALL_RADIUS, 0, 0};
+    srand(time(NULL));
+    ball_t ball = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, BALL_RADIUS};
+    // -BALL_VELOCITY <= y_velocity <= BALL_VELOCITY
+    ball.y_velocity = (rand() % (BALL_VELOCITY*2)) - BALL_VELOCITY;
+    ball.x_velocity = compute_x_velocity(ball.y_velocity);
 
     int mouse_x, mouse_y;
     bool running = true;
@@ -64,6 +74,10 @@ int main(void) {
                 running = false;
             }
         }
+
+        // Update ball
+        ball.x += ball.x_velocity;
+        ball.y += ball.y_velocity;
 
         // Update paddles
         SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -157,3 +171,9 @@ void draw_ball(ball_t *ball, SDL_Renderer *renderer) {
     }
 }
 
+/* In the triangle ABC the velocities are the catheti and BALL_VELOCITY is the hypotenuse */
+int compute_x_velocity(int y_velocity) {
+    // c**2 = a**2 + b**2
+    // b = sqrt(c**2 - a**2)
+    return sqrt(BALL_VELOCITY*BALL_VELOCITY - y_velocity*y_velocity);
+}

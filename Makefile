@@ -12,7 +12,7 @@ HDRS =
 
 # space-separated list of libraries, if any,
 # each of which should be prefixed with -l
-LIBS = -lSDL2 -l SDL2main
+LIBS = -lSDL2 -lSDL2main -lm
 
 # space-separated list of source files
 SRCS = pong_ultimate.c
