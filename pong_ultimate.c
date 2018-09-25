@@ -6,6 +6,7 @@
 #define PADDLE_HEIGHT 100
 #define PADDLE_WIDTH  20
 #define BORDER_DISTANCE 10
+#define BALL_RADIUS 10
 
 typedef struct {
     /* x and y denote the upper left corner */
@@ -15,6 +16,14 @@ typedef struct {
     int height;
 } paddle_t;
 
+typedef struct {
+    int x;
+    int y;
+    int radius;
+    int y_velocity;
+    int x_velocity;
+} ball_t;
+
 void initialize_paddles(
             paddle_t *left_paddle,
             paddle_t *right_paddle,
@@ -22,6 +31,8 @@ void initialize_paddles(
             paddle_t *bottom_paddle);
 
 void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer);
+
+void draw_ball(ball_t *ball, SDL_Renderer *renderer);
 
 int constrain(int n, int low, int heigh);
 
@@ -39,6 +50,8 @@ int main(void) {
 
     paddle_t left_paddle, right_paddle, top_paddle, bottom_paddle;
     initialize_paddles(&right_paddle, &left_paddle, &top_paddle, &bottom_paddle);
+
+    ball_t ball = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, BALL_RADIUS, 0, 0};
 
     int mouse_x, mouse_y;
     bool running = true;
@@ -75,6 +88,7 @@ int main(void) {
         draw_paddle(&right_paddle, renderer);
         draw_paddle(&top_paddle, renderer);
         draw_paddle(&bottom_paddle, renderer);
+        draw_ball(&ball, renderer);
         SDL_RenderPresent(renderer);
     }
 
@@ -94,7 +108,7 @@ int constrain(int n, int low, int heigh) {
 }
 
 void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer) {
-    SDL_SetRenderDrawColor( renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawRect(renderer, (SDL_Rect *)paddle);
 }
 
@@ -126,3 +140,20 @@ void initialize_paddles(
     bottom_paddle->width  = PADDLE_HEIGHT;
     bottom_paddle->height = PADDLE_WIDTH;
 }
+
+void draw_ball(ball_t *ball, SDL_Renderer *renderer) {
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    for (int w = 0; w < ball->radius * 2; w++)
+    {
+        for (int h = 0; h < ball->radius * 2; h++)
+        {
+            int dx = ball->radius - w; // horizontal offset
+            int dy = ball->radius - h; // vertical offset
+            if ((dx*dx + dy*dy) <= (ball->radius * ball->radius))
+            {
+                SDL_RenderDrawPoint(renderer, ball->x + dx, ball->y + dy);
+            }
+        }
+    }
+}
+
