@@ -3,13 +3,14 @@
 #include <time.h>
 #include "SDL2/SDL.h"
 
-#define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 800
-#define PADDLE_HEIGHT 100
-#define PADDLE_WIDTH  20
+#define SCREEN_WIDTH    800
+#define SCREEN_HEIGHT   800
+#define PADDLE_HEIGHT   100
+#define PADDLE_WIDTH    20
 #define BORDER_DISTANCE 10
-#define BALL_RADIUS 10
-#define BALL_VELOCITY 1 /* In pixel per frame */
+#define BALL_RADIUS     10
+#define BALL_VELOCITY   5    /* In pixel per frame */
+#define FPS             30
 
 typedef struct {
     /* x and y denote the upper left corner */
@@ -54,6 +55,8 @@ int main(void) {
             flags);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 
+    int ms_per_frame = 1000/FPS;
+
     paddle_t left_paddle, right_paddle, top_paddle, bottom_paddle;
     initialize_paddles(&right_paddle, &left_paddle, &top_paddle, &bottom_paddle);
 
@@ -64,6 +67,7 @@ int main(void) {
     ball.x_velocity = compute_x_velocity(ball.y_velocity);
 
     int mouse_x, mouse_y;
+    Uint32 last_time = SDL_GetTicks();
     bool running = true;
     SDL_Event e;
     while (running) {
@@ -104,6 +108,10 @@ int main(void) {
         draw_paddle(&bottom_paddle, renderer);
         draw_ball(&ball, renderer);
         SDL_RenderPresent(renderer);
+
+        /* Enforce a specified frame-rate */
+        while (!SDL_TICKS_PASSED(SDL_GetTicks(), last_time + ms_per_frame));
+        last_time = SDL_GetTicks();
     }
 
     SDL_DestroyRenderer(renderer);
