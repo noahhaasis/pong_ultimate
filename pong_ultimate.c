@@ -53,6 +53,7 @@ int main(void) {
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
             flags);
+    SDL_SetRelativeMouseMode(SDL_TRUE); // Trap the mouse
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
 
     int ms_per_frame = 1000/FPS;
