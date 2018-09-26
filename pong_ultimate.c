@@ -34,6 +34,8 @@ void initialize_paddles(
             paddle_t *top_paddle,
             paddle_t *bottom_paddle);
 
+void initialize_ball(ball_t *ball);
+
 void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer);
 
 void draw_ball(ball_t *ball, SDL_Renderer *renderer);
@@ -42,6 +44,8 @@ int constrain(int n, int low, int heigh);
 
 /* Compute the x_velocity so the ball has a total velocity of BALL_VELOCITY */
 int compute_x_velocity(int y_velocity);
+
+bool intersect(paddle_t *paddle, ball_t *ball);
 
 int main(void) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -62,10 +66,8 @@ int main(void) {
     initialize_paddles(&right_paddle, &left_paddle, &top_paddle, &bottom_paddle);
 
     srand(time(NULL));
-    ball_t ball = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, BALL_RADIUS};
-    // -BALL_VELOCITY <= y_velocity <= BALL_VELOCITY
-    ball.y_velocity = (rand() % (BALL_VELOCITY*2)) - BALL_VELOCITY;
-    ball.x_velocity = compute_x_velocity(ball.y_velocity);
+    ball_t ball;
+    initialize_ball(&ball);
 
     int mouse_x, mouse_y;
     Uint32 last_time = SDL_GetTicks();
@@ -80,9 +82,24 @@ int main(void) {
             }
         }
 
+        // Bounce of the paddles
+        if (intersect(&right_paddle, &ball) || intersect(&left_paddle, &ball)) {
+            ball.x_velocity = -ball.x_velocity;
+        }
+        if (intersect(&bottom_paddle, &ball) || intersect(&top_paddle, &ball)) {
+            ball.y_velocity = -ball.y_velocity;
+        }
+
         // Update ball
         ball.x += ball.x_velocity;
         ball.y += ball.y_velocity;
+
+        // Reset the ball if it touches the borders
+        if (ball.x <= 0 || ball.x >= SCREEN_WIDTH || 
+            ball.y <= 0 || ball.y >= SCREEN_HEIGHT) {
+            initialize_ball(&ball);
+        }
+
 
         // Update paddles
         SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -185,4 +202,22 @@ int compute_x_velocity(int y_velocity) {
     // c**2 = a**2 + b**2
     // b = sqrt(c**2 - a**2)
     return sqrt(BALL_VELOCITY*BALL_VELOCITY - y_velocity*y_velocity);
+}
+
+bool intersect(paddle_t *paddle, ball_t *ball) {
+    bool horizontal_intersect = 
+        (ball->y - ball->radius) < (paddle->y + paddle->height) && 
+        (ball->y + ball->radius) > paddle->y;
+    bool vertical_intersect =
+        (ball->x - ball->radius) < (paddle->x + paddle->width) &&
+        (ball->x + ball->radius) > paddle->x;
+    return vertical_intersect && horizontal_intersect;
+}
+void initialize_ball(ball_t *ball) {
+    ball->x = SCREEN_WIDTH/2;
+    ball->y = SCREEN_HEIGHT/2;
+    ball->radius = BALL_RADIUS;
+    // -BALL_VELOCITY <= y_velocity <= BALL_VELOCITY
+    ball->y_velocity = (rand() % (BALL_VELOCITY*2)) - BALL_VELOCITY;
+    ball->x_velocity = compute_x_velocity(ball->y_velocity);
 }
