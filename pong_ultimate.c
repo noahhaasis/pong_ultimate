@@ -182,6 +182,7 @@ bool intersect(paddle_t *paddle, ball_t *ball) {
         (ball->x + ball->radius) > paddle->x;
     return vertical_intersect && horizontal_intersect;
 }
+
 void initialize_ball(ball_t *ball) {
     ball->x = SCREEN_WIDTH/2;
     ball->y = SCREEN_HEIGHT/2;
@@ -190,6 +191,7 @@ void initialize_ball(ball_t *ball) {
     ball->y_velocity = (rand() % (BALL_VELOCITY*2)) - BALL_VELOCITY;
     ball->x_velocity = compute_x_velocity(ball->y_velocity);
 }
+
 void draw_paddles(paddles_t *paddles, SDL_Renderer *renderer) {
     draw_paddle(&paddles->left_paddle, renderer);
     draw_paddle(&paddles->right_paddle, renderer);
