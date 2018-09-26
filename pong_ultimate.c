@@ -9,7 +9,7 @@
 #define PADDLE_WIDTH    20
 #define BORDER_DISTANCE 10
 #define BALL_RADIUS     10
-#define BALL_VELOCITY   5    /* In pixel per frame */
+#define BALL_VELOCITY   8    /* In pixel per frame */
 #define FPS             30
 
 typedef struct {
