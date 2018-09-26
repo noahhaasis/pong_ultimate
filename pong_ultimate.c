@@ -21,6 +21,13 @@ typedef struct {
 } paddle_t;
 
 typedef struct {
+    paddle_t left_paddle;
+    paddle_t right_paddle;
+    paddle_t top_paddle;
+    paddle_t bottom_paddle;
+} paddles_t;
+
+typedef struct {
     int x;
     int y;
     int radius;
@@ -28,17 +35,19 @@ typedef struct {
     int x_velocity;
 } ball_t;
 
-void initialize_paddles(
-            paddle_t *left_paddle,
-            paddle_t *right_paddle,
-            paddle_t *top_paddle,
-            paddle_t *bottom_paddle);
+void initialize_paddles(paddles_t *paddles);
 
 void initialize_ball(ball_t *ball);
+
+void draw_paddles(paddles_t *paddles, SDL_Renderer *renderer);
 
 void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer);
 
 void draw_ball(ball_t *ball, SDL_Renderer *renderer);
+
+void update_ball(ball_t *ball, paddles_t *paddles);
+
+void update_paddles(paddles_t *paddles);
 
 int constrain(int n, int low, int heigh);
 
@@ -62,14 +71,13 @@ int main(void) {
 
     int ms_per_frame = 1000/FPS;
 
-    paddle_t left_paddle, right_paddle, top_paddle, bottom_paddle;
-    initialize_paddles(&right_paddle, &left_paddle, &top_paddle, &bottom_paddle);
+    paddles_t paddles;
+    initialize_paddles(&paddles);
 
     srand(time(NULL));
     ball_t ball;
     initialize_ball(&ball);
 
-    int mouse_x, mouse_y;
     Uint32 last_time = SDL_GetTicks();
     bool running = true;
     SDL_Event e;
@@ -82,48 +90,13 @@ int main(void) {
             }
         }
 
-        // Bounce of the paddles
-        if (intersect(&right_paddle, &ball) || intersect(&left_paddle, &ball)) {
-            ball.x_velocity = -ball.x_velocity;
-        }
-        if (intersect(&bottom_paddle, &ball) || intersect(&top_paddle, &ball)) {
-            ball.y_velocity = -ball.y_velocity;
-        }
-
-        // Update ball
-        ball.x += ball.x_velocity;
-        ball.y += ball.y_velocity;
-
-        // Reset the ball if it touches the borders
-        if (ball.x <= 0 || ball.x >= SCREEN_WIDTH || 
-            ball.y <= 0 || ball.y >= SCREEN_HEIGHT) {
-            initialize_ball(&ball);
-        }
-
-
-        // Update paddles
-        SDL_GetMouseState(&mouse_x, &mouse_y);
-        int max_x = SCREEN_WIDTH - (BORDER_DISTANCE + PADDLE_WIDTH + PADDLE_HEIGHT);
-        int min_x = BORDER_DISTANCE + PADDLE_WIDTH;
-        int new_x = constrain(mouse_x - PADDLE_HEIGHT/2, min_x, max_x);
-
-        int min_y = BORDER_DISTANCE + PADDLE_WIDTH;
-        int max_y = SCREEN_HEIGHT - (BORDER_DISTANCE + PADDLE_WIDTH + PADDLE_HEIGHT);
-        int new_y = constrain(mouse_y - PADDLE_HEIGHT/2, min_y, max_y);
-
-        left_paddle.y = new_y;
-        right_paddle.y = new_y;
-        top_paddle.x = new_x;
-        bottom_paddle.x = new_x;
-
+        update_ball(&ball, &paddles);
+        update_paddles(&paddles);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         
-        draw_paddle(&left_paddle, renderer);
-        draw_paddle(&right_paddle, renderer);
-        draw_paddle(&top_paddle, renderer);
-        draw_paddle(&bottom_paddle, renderer);
+        draw_paddles(&paddles, renderer);
         draw_ball(&ball, renderer);
         SDL_RenderPresent(renderer);
 
@@ -152,33 +125,29 @@ void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer) {
     SDL_RenderDrawRect(renderer, (SDL_Rect *)paddle);
 }
 
-void initialize_paddles(
-            paddle_t *left_paddle,
-            paddle_t *right_paddle,
-            paddle_t *top_paddle,
-            paddle_t *bottom_paddle) {
+void initialize_paddles(paddles_t *paddles) {
     int horizontal_middle = (int)((SCREEN_WIDTH - PADDLE_HEIGHT) / 2);
     int vertical_middle = (int)((SCREEN_HEIGHT - PADDLE_HEIGHT) / 2);
 
-    left_paddle->x        = BORDER_DISTANCE;
-    left_paddle->y        = vertical_middle;
-    left_paddle->width    = PADDLE_WIDTH;
-    left_paddle->height   = PADDLE_HEIGHT;
+    paddles->left_paddle.x        = BORDER_DISTANCE;
+    paddles->left_paddle.y        = vertical_middle;
+    paddles->left_paddle.width    = PADDLE_WIDTH;
+    paddles->left_paddle.height   = PADDLE_HEIGHT;
 
-    right_paddle->x       = SCREEN_WIDTH - BORDER_DISTANCE - PADDLE_WIDTH;
-    right_paddle->y       = vertical_middle;
-    right_paddle->width   = PADDLE_WIDTH;
-    right_paddle->height  = PADDLE_HEIGHT;
+    paddles->right_paddle.x       = SCREEN_WIDTH - BORDER_DISTANCE - PADDLE_WIDTH;
+    paddles->right_paddle.y       = vertical_middle;
+    paddles->right_paddle.width   = PADDLE_WIDTH;
+    paddles->right_paddle.height  = PADDLE_HEIGHT;
 
-    top_paddle->x         = horizontal_middle;
-    top_paddle->y         = BORDER_DISTANCE;
-    top_paddle->width     = PADDLE_HEIGHT;
-    top_paddle->height    = PADDLE_WIDTH;
+    paddles->top_paddle.x         = horizontal_middle;
+    paddles->top_paddle.y         = BORDER_DISTANCE;
+    paddles->top_paddle.width     = PADDLE_HEIGHT;
+    paddles->top_paddle.height    = PADDLE_WIDTH;
 
-    bottom_paddle->x      = horizontal_middle;
-    bottom_paddle->y      = SCREEN_HEIGHT - BORDER_DISTANCE - PADDLE_WIDTH;
-    bottom_paddle->width  = PADDLE_HEIGHT;
-    bottom_paddle->height = PADDLE_WIDTH;
+    paddles->bottom_paddle.x      = horizontal_middle;
+    paddles->bottom_paddle.y      = SCREEN_HEIGHT - BORDER_DISTANCE - PADDLE_WIDTH;
+    paddles->bottom_paddle.width  = PADDLE_HEIGHT;
+    paddles->bottom_paddle.height = PADDLE_WIDTH;
 }
 
 void draw_ball(ball_t *ball, SDL_Renderer *renderer) {
@@ -220,4 +189,49 @@ void initialize_ball(ball_t *ball) {
     // -BALL_VELOCITY <= y_velocity <= BALL_VELOCITY
     ball->y_velocity = (rand() % (BALL_VELOCITY*2)) - BALL_VELOCITY;
     ball->x_velocity = compute_x_velocity(ball->y_velocity);
+}
+void draw_paddles(paddles_t *paddles, SDL_Renderer *renderer) {
+    draw_paddle(&paddles->left_paddle, renderer);
+    draw_paddle(&paddles->right_paddle, renderer);
+    draw_paddle(&paddles->top_paddle, renderer);
+    draw_paddle(&paddles->bottom_paddle, renderer);
+}
+
+void update_paddles(paddles_t *paddles) {
+    int mouse_x, mouse_y;
+    SDL_GetMouseState(&mouse_x, &mouse_y);
+    int max_x = SCREEN_WIDTH - (BORDER_DISTANCE + PADDLE_WIDTH + PADDLE_HEIGHT);
+    int min_x = BORDER_DISTANCE + PADDLE_WIDTH;
+    int new_x = constrain(mouse_x - PADDLE_HEIGHT/2, min_x, max_x);
+
+    int min_y = BORDER_DISTANCE + PADDLE_WIDTH;
+    int max_y = SCREEN_HEIGHT - (BORDER_DISTANCE + PADDLE_WIDTH + PADDLE_HEIGHT);
+    int new_y = constrain(mouse_y - PADDLE_HEIGHT/2, min_y, max_y);
+
+    paddles->left_paddle.y = new_y;
+    paddles->right_paddle.y = new_y;
+    paddles->top_paddle.x = new_x;
+    paddles->bottom_paddle.x = new_x;
+}
+
+void update_ball(ball_t *ball, paddles_t *paddles) {
+    // Bounce of the paddles
+    if (intersect(&paddles->right_paddle, ball) || 
+        intersect(&paddles->left_paddle, ball)) {
+        ball->x_velocity = -ball->x_velocity;
+    }
+    if (intersect(&paddles->bottom_paddle, ball) || 
+        intersect(&paddles->top_paddle, ball)) {
+        ball->y_velocity = -ball->y_velocity;
+    }
+
+    // Update ball
+    ball->x += ball->x_velocity;
+    ball->y += ball->y_velocity;
+
+    // Reset the ball if it touches the borders
+    if (ball->x <= 0 || ball->x >= SCREEN_WIDTH || 
+        ball->y <= 0 || ball->y >= SCREEN_HEIGHT) {
+        initialize_ball(ball);
+    }
 }
