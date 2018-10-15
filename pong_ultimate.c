@@ -51,7 +51,6 @@ void update_paddles(paddles_t *paddles);
 
 int constrain(int n, int low, int heigh);
 
-/* Compute the x_velocity so the ball has a total velocity of BALL_VELOCITY */
 int compute_x_velocity(int y_velocity);
 
 bool intersect(paddle_t *paddle, ball_t *ball);
@@ -227,7 +226,6 @@ void update_ball(ball_t *ball, paddles_t *paddles) {
         ball->y_velocity = -ball->y_velocity;
     }
 
-    // Update ball
     ball->x += ball->x_velocity;
     ball->y += ball->y_velocity;
 
