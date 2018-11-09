@@ -36,24 +36,19 @@ typedef struct {
 } ball_t;
 
 void initialize_paddles(paddles_t *paddles);
-
 void initialize_ball(ball_t *ball);
 
 void draw_paddles(paddles_t *paddles, SDL_Renderer *renderer);
-
 void draw_paddle(paddle_t *paddle, SDL_Renderer *renderer);
-
 void draw_ball(ball_t *ball, SDL_Renderer *renderer);
 
 void update_ball(ball_t *ball, paddles_t *paddles);
-
 void update_paddles(paddles_t *paddles);
 
-int constrain(int n, int low, int heigh);
-
 int compute_x_velocity(int y_velocity);
-
 bool intersect(paddle_t *paddle, ball_t *ball);
+
+int constrain(int n, int low, int heigh);
 
 int main(void) {
     SDL_Init(SDL_INIT_VIDEO);
