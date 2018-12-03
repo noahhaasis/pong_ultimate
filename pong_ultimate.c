@@ -217,12 +217,18 @@ void update_paddles(paddles_t *paddles) {
 
 void update_ball(ball_t *ball, paddles_t *paddles) {
     // Bounce of the paddles
-    if (intersect(&paddles->right_paddle, ball) || 
-        intersect(&paddles->left_paddle, ball)) {
+    // TODO: Push the ball out off the paddle so they don't intersect anymore
+    if (intersect(&paddles->right_paddle, ball)) {
         ball->x_velocity = -ball->x_velocity;
     }
+    if (intersect(&paddles->left_paddle, ball)) {
+        ball->x_velocity = -ball->x_velocity;
+    }
+
     if (intersect(&paddles->bottom_paddle, ball) || 
-        intersect(&paddles->top_paddle, ball)) {
+        ball->y_velocity = -ball->y_velocity;
+    }
+    if (intersect(&paddles->top_paddle, ball)) {
         ball->y_velocity = -ball->y_velocity;
     }
 
