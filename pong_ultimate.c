@@ -45,8 +45,6 @@ void draw_ball(ball_t *ball, SDL_Renderer *renderer);
 void update_ball(ball_t *ball, paddles_t *paddles);
 void update_paddles(paddles_t *paddles);
 
-int constrain(int n, int low, int heigh);
-
 int compute_x_velocity(int y_velocity);
 bool intersect(paddle_t *paddle, ball_t *ball);
 
